@@ -1,0 +1,89 @@
+import random
+
+def marble_bet():
+    """Simulates a marble betting game.
+
+    The player starts with 1000 gold and bets on the color of a marble
+    drawn from a virtual bag. The game continues for a specified number of rounds
+    or until the player loses more than half of their starting gold.
+    """
+    bag_dict = {'green': 6, 'red': 4}
+    bag_list = [colour for colour, count in bag_dict.items() for _ in range(count)]
+    start_gold = 1000 
+    remaining_gold = start_gold
+
+    while True:
+        num_rounds = input('How many rounds do you want to play? ')
+        if num_rounds.isdigit() and int(num_rounds) > 0:
+            num_rounds = int(num_rounds)
+            break
+        else:
+            print('Invalid input. Please enter a number larger than 0.')
+
+    for round_num in range(num_rounds):
+        round_result = play_round(round_num, remaining_gold, bag_list, start_gold)
+        if round_result["game_over"]:
+            return round_result["message"]
+        remaining_gold = round_result["remaining_gold"]
+
+    return f'Thanks for playing. You now have {remaining_gold} gold, starting with {start_gold} gold.'
+
+def play_round(round_num, remaining_gold, bag_list, start_gold):
+    """Plays a single round of the marble betting game.
+
+    Args:
+        round_num: The current round number.
+        remaining_gold: The amount of gold the player has remaining.
+        bag_list: The list of marbles in the bag.
+        start_gold: The initial amount of gold at the start of the game.
+
+    Returns:
+        A dictionary containing the result of the round:
+            - game_over (bool): True if the game is over, False otherwise.
+            - message (str): A message to display to the player.
+            - remaining_gold (int): The amount of gold the player has after the round.
+    """
+    while True:
+        bet_colour = input(f'Round {round_num + 1}: What colour are you betting on? Red (r) or Green (g)? ').lower()
+        if bet_colour in ['red', 'green', 'r', 'g']:
+            if bet_colour == 'r':
+                bet_colour = 'red'
+            elif bet_colour == 'g':
+                bet_colour = 'green'
+            break
+        else:
+            print('Invalid input. Please enter a valid colour.')
+
+    while True:
+        try:
+            bet_amount = int(input(f'Round {round_num + 1}: How much do you want to bet? You have {remaining_gold} pieces of gold remaining. '))
+            if 0 < bet_amount <= remaining_gold:
+                break
+            elif bet_amount == 0:
+                print('Bet amount must be larger than 0.')
+            else:
+                print("You don't have enough gold to make that bet.")
+        except ValueError:
+            print('Invalid input. Please enter a number for the bet amount.')
+
+    draw = random.choice(bag_list)
+    print(f' A {draw} is drawn. You have chosen {bet_colour}.')
+    if bet_colour == draw:
+        remaining_gold += bet_amount
+    else:
+        remaining_gold -= bet_amount
+
+    if remaining_gold < start_gold * 0.5:
+        return {
+            "game_over": True,
+            "message": f'Game over. You have lost more than half of your gold. Start gold: {start_gold}, remaining gold: {remaining_gold}',
+            "remaining_gold": remaining_gold
+        }
+
+    return {
+        "game_over": False,
+        "message": "",
+        "remaining_gold": remaining_gold
+    }
+
+print(marble_bet())
